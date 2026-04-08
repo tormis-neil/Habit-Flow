@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme using Material3 -->
+    <style name="Theme.HabitFlow" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
+
+    <!-- Splash screen style (used only during app startup) -->
+    <style name="Theme.HabitFlow.Splash" parent="Theme.HabitFlow">
+        <item name="android:windowBackground">@color/habit_purple</item>
+    </style>
+</resources>

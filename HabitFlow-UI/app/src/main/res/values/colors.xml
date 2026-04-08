@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="habit_purple">#FF6750A4</color>
+    <color name="habit_green">#FF4CAF50</color>
+    <color name="habit_orange">#FFFF6D00</color>
+    <color name="habit_blue">#FF0288D1</color>
+    <color name="habit_red">#FFE53935</color>
+    <color name="habit_teal">#FF00897B</color>
+</resources>

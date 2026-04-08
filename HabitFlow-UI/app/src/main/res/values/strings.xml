@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HabitFlow</string>
+
+    <!-- Navigation / Content descriptions -->
+    <string name="cd_back">Back</string>
+    <string name="cd_progress">Progress</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_edit">Edit</string>
+    <string name="cd_delete">Delete</string>
+    <string name="cd_mark_complete">Mark complete</string>
+    <string name="cd_mark_incomplete">Mark incomplete</string>
+
+    <!-- Habit form -->
+    <string name="title_new_habit">New Habit</string>
+    <string name="title_edit_habit">Edit Habit</string>
+    <string name="habit_title_label">Habit Title *</string>
+    <string name="habit_title_hint">e.g. Morning Meditation</string>
+    <string name="habit_title_error">Title is required</string>
+    <string name="habit_description_label">Description (optional)</string>
+    <string name="habit_description_hint">What\'s this habit about?</string>
+    <string name="label_frequency">Frequency</string>
+    <string name="label_color">Color</string>
+    <string name="tips_title">💡 Tips for good habits</string>
+    <string name="tips_body">• Start small — 5 minutes beats 0\n• Be specific about when you\'ll do it\n• Link it to an existing routine</string>
+
+    <!-- Frequency -->
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_weekly">Weekly</string>
+
+    <!-- Home -->
+    <string name="home_all_done">All done! Great work 🎉</string>
+    <string name="home_no_habits_today">No habits for today</string>
+    <string name="home_keep_going">Keep going!</string>
+    <string name="home_progress_label">Today\'s Progress</string>
+    <string name="home_no_habits_title">No habits yet</string>
+    <string name="home_no_habits_subtitle">Tap the button below to create your first habit</string>
+    <string name="home_fab_new_habit">New Habit</string>
+    <string name="home_habits_count">%1$d habit%2$s</string>
+
+    <!-- Habit detail -->
+    <string name="title_habit_detail">Habit Detail</string>
+    <string name="completed_today_label">Completed Today ✓</string>
+    <string name="mark_complete_label">Mark Complete</string>
+    <string name="section_statistics">Statistics</string>
+    <string name="stat_current_streak">Current Streak</string>
+    <string name="stat_best_streak">Best Streak</string>
+    <string name="stat_total">Total</string>
+    <string name="stat_unit_days">days</string>
+    <string name="stat_unit_done">done</string>
+    <string name="section_this_week">This Week</string>
+    <string name="section_recent_completions">Recent Completions</string>
+    <string name="section_settings">Settings</string>
+    <string name="setting_habit_active">Habit Active</string>
+    <string name="setting_habit_active_subtitle">Show on your daily list</string>
+    <string name="detail_started_on">Started on %1$s</string>
+
+    <!-- Streak -->
+    <string name="streak_day">%1$d day</string>
+    <string name="streak_days">%1$d days</string>
+    <string name="streak_day_label">%1$d day streak</string>
+    <string name="streak_days_label">%1$d days streak</string>
+
+    <!-- Progress screen -->
+    <string name="title_progress">Progress</string>
+    <string name="progress_your_overview">Your Overview</string>
+    <string name="progress_stat_habits">Habits</string>
+    <string name="progress_stat_streak_days">Streak Days</string>
+    <string name="progress_stat_week_rate">Week Rate</string>
+    <string name="progress_habits_fraction">%1$d / %2$d</string>
+    <string name="progress_no_habits_title">No habits tracked yet</string>
+    <string name="progress_no_habits_subtitle">Create habits and complete them to see progress here</string>
+    <string name="section_habit_breakdown">Habit Breakdown</string>
+    <string name="progress_week_summary">%1$d/%2$d this week</string>
+    <string name="chip_best_streak">🏆 Best: %1$dd</string>
+    <string name="chip_total_completions">✅ Total: %1$d</string>
+    <string name="chip_paused">⏸ Paused</string>
+
+    <!-- Actions -->
+    <string name="action_save">Save</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_create_habit">Create Habit</string>
+    <string name="action_go">Go</string>
+
+    <!-- Delete dialog -->
+    <string name="delete_habit_title">Delete Habit</string>
+    <string name="delete_habit_message">Delete \"%1$s\"? All history will be lost.</string>
+
+    <!-- Settings -->
+    <string name="title_settings">Settings</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_dark_mode_subtitle">Follow system theme</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_notifications">Daily Reminders</string>
+    <string name="settings_notifications_subtitle">Get reminded to complete your habits</string>
+    <string name="settings_weekly_report">Weekly Report</string>
+    <string name="settings_weekly_report_subtitle">Summary of your week every Sunday</string>
+    <string name="settings_section_data">Data</string>
+    <string name="settings_export_data">Export Data</string>
+    <string name="settings_export_data_subtitle">Download your habit history as CSV</string>
+    <string name="settings_cloud_sync">Cloud Sync</string>
+    <string name="settings_cloud_sync_subtitle">Coming soon — sign in to sync across devices</string>
+    <string name="settings_section_about">About</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_version_value">1.0.0</string>
+    <string name="settings_open_source">Open Source</string>
+    <string name="settings_open_source_value">MIT License</string>
+    <string name="settings_tagline">HabitFlow • Build positive habits, one day at a time.</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_delete_habit">Failed to delete habit</string>
+    <string name="error_update_habit">Failed to update habit</string>
+</resources>
