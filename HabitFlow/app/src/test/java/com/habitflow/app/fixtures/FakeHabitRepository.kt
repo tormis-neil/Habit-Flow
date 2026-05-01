@@ -1,4 +1,4 @@
-package com.habitflow.app.utils
+package com.habitflow.app.fixtures
 
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitFrequency
@@ -10,13 +10,14 @@ import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 
 /**
- * In-memory [HabitRepository] that replaces Room for the UI-only project.
- * All state lives in [MutableStateFlow]s so the ViewModels can
- * observe changes reactively, exactly as they would with a real database.
+ * Test fixture: an in-memory [HabitRepository] used by unit tests in place
+ * of the real Room-backed implementation. It seeds a few sample habits so
+ * tests that read the repository have realistic data without touching disk.
+ *
+ * NOTE: this file lives under src/test/, so it is NOT shipped in the app.
  */
-class FakeDataSource : HabitRepository {
+class FakeHabitRepository : HabitRepository {
 
-    // Seed habits shown on first launch
     private val seedHabits = listOf(
         Habit(id = 1, title = "Morning Meditation", description = "10 minutes of mindfulness", frequency = HabitFrequency.DAILY, startDate = LocalDate.now().minusDays(30), currentStreak = 7, longestStreak = 14, totalCompletions = 28, color = "#6750A4"),
         Habit(id = 2, title = "Read 20 Pages",      description = "Any book counts",            frequency = HabitFrequency.DAILY, startDate = LocalDate.now().minusDays(20), currentStreak = 3, longestStreak = 10, totalCompletions = 15, color = "#0288D1"),
@@ -28,11 +29,9 @@ class FakeDataSource : HabitRepository {
     private val _habits = MutableStateFlow(seedHabits)
     override val habits: StateFlow<List<Habit>> = _habits.asStateFlow()
 
-    // Set of habit IDs completed today
     private val _completedTodayIds = MutableStateFlow(setOf(1L, 3L))
     override val completedTodayIds: StateFlow<Set<Long>> = _completedTodayIds.asStateFlow()
 
-    // Completed dates per habit (for detail screen history)
     private val _completedDates = MutableStateFlow<Map<Long, List<LocalDate>>>(
         mapOf(
             1L to (0..27).map { LocalDate.now().minusDays(it.toLong()) }.filter { it.dayOfWeek.value < 6 },
@@ -45,8 +44,6 @@ class FakeDataSource : HabitRepository {
     override val completedDates: StateFlow<Map<Long, List<LocalDate>>> = _completedDates.asStateFlow()
 
     private var nextId = 6L
-
-    // ─── Mutations ────────────────────────────────────────────────────────────
 
     override suspend fun addHabit(habit: Habit): Long {
         val id = nextId++
@@ -75,7 +72,6 @@ class FakeDataSource : HabitRepository {
         _completedTodayIds.update {
             if (isNowDone) it + habitId else it - habitId
         }
-        // Update streak on the habit
         _habits.update { list ->
             list.map { habit ->
                 if (habit.id != habitId) habit
@@ -92,12 +88,12 @@ class FakeDataSource : HabitRepository {
         return isNowDone
     }
 
-    override suspend fun getHabitById(id: Long): Habit? = _habits.value.firstOrNull { it.id == id }
+    override suspend fun getHabitById(id: Long): Habit? =
+        _habits.value.firstOrNull { it.id == id }
 
     override suspend fun getCompletedDates(habitId: Long): List<LocalDate> =
         _completedDates.value[habitId] ?: emptyList()
 
-    /** Build a 7-element list of booleans (Mon..Sun) for the current week. */
     override suspend fun getWeeklyProgress(habitId: Long): List<Boolean> {
         val today = LocalDate.now()
         val weekStart = today.with(java.time.DayOfWeek.MONDAY)
