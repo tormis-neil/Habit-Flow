@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 
+import javax.inject.Inject
+
 /**
  * FEATURE B — Local Data Persistence (Room)
  *
@@ -35,7 +37,7 @@ import java.time.LocalDate
  * All database work runs on `Dispatchers.IO` — a background thread —
  * so the UI (main thread) is never blocked or frozen.
  */
-class RoomHabitRepository(
+class RoomHabitRepository @Inject constructor(
     private val dao: HabitDao,
 ) : HabitRepository {
 

@@ -27,6 +27,9 @@ data class HabitDetailUiState(
     val isDeleted: Boolean = false,                      // Signals the screen to navigate back
 )
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 /**
  * FEATURE D — State & User Interaction
  *
@@ -42,7 +45,8 @@ data class HabitDetailUiState(
  * User actions (toggle, enable/disable, delete) are dispatched to the repository
  * as suspend calls on the IO thread, keeping the UI thread free.
  */
-class HabitDetailViewModel(
+@HiltViewModel
+class HabitDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: HabitRepository,
 ) : ViewModel() {

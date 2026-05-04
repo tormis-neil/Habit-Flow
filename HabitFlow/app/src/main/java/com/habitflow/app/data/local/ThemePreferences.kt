@@ -1,16 +1,20 @@
 package com.habitflow.app.data.local
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Persists theme preferences using SharedPreferences.
  * Exposes a reactive [StateFlow] for the dark mode setting so
  * [com.habitflow.app.presentation.ui.MainActivity] can observe it.
  */
-class ThemePreferences(context: Context) {
+@Singleton
+class ThemePreferences @Inject constructor(@ApplicationContext context: Context) {
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 

@@ -4,12 +4,16 @@ import androidx.lifecycle.ViewModel
 import com.habitflow.app.data.local.ThemePreferences
 import kotlinx.coroutines.flow.StateFlow
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 /**
  * ViewModel for the Settings screen.
  * Delegates dark-mode state to [ThemePreferences] which persists
  * the choice and broadcasts it to the theme layer via [StateFlow].
  */
-class SettingsViewModel(
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
     private val themePreferences: ThemePreferences,
 ) : ViewModel() {
 

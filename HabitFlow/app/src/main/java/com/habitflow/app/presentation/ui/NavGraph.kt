@@ -5,20 +5,17 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.habitflow.app.data.local.ThemePreferences
-import com.habitflow.app.domain.repository.HabitRepository
 import com.habitflow.app.presentation.ui.screens.habits.HabitDetailScreen
 import com.habitflow.app.presentation.ui.screens.habits.HabitFormScreen
 import com.habitflow.app.presentation.ui.screens.home.HomeScreen
 import com.habitflow.app.presentation.ui.screens.progress.ProgressScreen
 import com.habitflow.app.presentation.ui.screens.settings.SettingsScreen
-import com.habitflow.app.presentation.viewmodel.HabitFlowViewModelFactory
 
 /**
  * FEATURE C — Jetpack Compose UI
@@ -54,14 +51,12 @@ private const val ANIM_DURATION = 300
  * Every composable() block below is one screen destination. The NavHost starts
  * at the Home screen and handles back-stack (going back to previous screens).
  *
- * Each screen receives its ViewModel via the factory, which injects the
- * shared repository and any route arguments (like a habitId).
+ * Each screen receives its ViewModel via Hilt, which injects the
+ * dependencies automatically.
  */
 @Composable
 fun HabitFlowNavGraph(
     navController: NavHostController,
-    repository: HabitRepository,
-    themePreferences: ThemePreferences,
 ) {
     NavHost(
         navController = navController,
@@ -86,7 +81,7 @@ fun HabitFlowNavGraph(
         // ── Home ──────────────────────────────────────────────────────────────
         composable(Screen.Home.route) {
             HomeScreen(
-                viewModel = viewModel(factory = HabitFlowViewModelFactory(it, defaultArgs = it.arguments, repository = repository)),
+                viewModel = hiltViewModel(),
                 onNavigateToDetail   = { id -> navController.navigate(Screen.HabitDetail.createRoute(id)) },
                 onNavigateToCreate   = { navController.navigate(Screen.HabitCreate.route) },
                 onNavigateToProgress = { navController.navigate(Screen.Progress.route) },
@@ -97,7 +92,7 @@ fun HabitFlowNavGraph(
         // ── Progress ─────────────────────────────────────────────────────────
         composable(Screen.Progress.route) {
             ProgressScreen(
-                viewModel = viewModel(factory = HabitFlowViewModelFactory(it, defaultArgs = it.arguments, repository = repository)),
+                viewModel = hiltViewModel(),
                 onNavigateBack     = { navController.popBackStack() },
                 onNavigateToDetail = { id -> navController.navigate(Screen.HabitDetail.createRoute(id)) },
             )
@@ -106,7 +101,7 @@ fun HabitFlowNavGraph(
         // ── Settings ─────────────────────────────────────────────────────────
         composable(Screen.Settings.route) {
             SettingsScreen(
-                viewModel = viewModel(factory = HabitFlowViewModelFactory(it, defaultArgs = it.arguments, repository = repository, themePreferences = themePreferences)),
+                viewModel = hiltViewModel(),
                 onNavigateBack = { navController.popBackStack() },
             )
         }
@@ -114,7 +109,7 @@ fun HabitFlowNavGraph(
         // ── Create Habit ─────────────────────────────────────────────────────
         composable(Screen.HabitCreate.route) {
             HabitFormScreen(
-                viewModel      = viewModel(factory = HabitFlowViewModelFactory(it, defaultArgs = it.arguments, repository = repository)),
+                viewModel      = hiltViewModel(),
                 onNavigateBack = { navController.popBackStack() },
                 onSaved        = { navController.popBackStack() }, // Go back after saving
             )
@@ -126,7 +121,7 @@ fun HabitFlowNavGraph(
             arguments = listOf(navArgument("habitId") { type = NavType.LongType }),
         ) {
             HabitFormScreen(
-                viewModel      = viewModel(factory = HabitFlowViewModelFactory(it, defaultArgs = it.arguments, repository = repository)),
+                viewModel      = hiltViewModel(),
                 onNavigateBack = { navController.popBackStack() },
                 onSaved        = { navController.popBackStack() },
             )
@@ -138,7 +133,7 @@ fun HabitFlowNavGraph(
             arguments = listOf(navArgument("habitId") { type = NavType.LongType }),
         ) {
             HabitDetailScreen(
-                viewModel       = viewModel(factory = HabitFlowViewModelFactory(it, defaultArgs = it.arguments, repository = repository)),
+                viewModel       = hiltViewModel(),
                 onNavigateBack  = { navController.popBackStack() },
                 onNavigateToEdit = { id -> navController.navigate(Screen.HabitEdit.createRoute(id)) },
                 onDeleted        = { navController.popBackStack() }, // Go back after deleting
@@ -146,3 +141,4 @@ fun HabitFlowNavGraph(
         }
     }
 }
+

@@ -11,17 +11,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.habitflow.app.HabitFlowApplication
+import com.habitflow.app.data.local.ThemePreferences
 import com.habitflow.app.presentation.ui.theme.HabitFlowTheme
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var themePreferences: ThemePreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        val app = application as HabitFlowApplication
-        val repository = app.repository
-        val themePreferences = app.themePreferences
 
         setContent {
             val isDarkMode by themePreferences.isDarkMode.collectAsState()
@@ -32,12 +35,9 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     HabitFlowNavGraph(
                         navController = navController,
-                        repository = repository,
-                        themePreferences = themePreferences,
                     )
                 }
             }
         }
     }
 }
-
