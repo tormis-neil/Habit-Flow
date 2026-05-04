@@ -32,6 +32,9 @@ data class HabitFormUiState(
     val titleError: Int? = null,                         // String resource ID for validation error
 )
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 /**
  * FEATURE D — State & User Interaction
  *
@@ -52,7 +55,8 @@ data class HabitFormUiState(
  *  3. If creating, build a brand new Habit with today as the start date.
  *  4. Set `isSaved = true` to signal the screen to navigate back.
  */
-class HabitFormViewModel(
+@HiltViewModel
+class HabitFormViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: HabitRepository,
 ) : ViewModel() {

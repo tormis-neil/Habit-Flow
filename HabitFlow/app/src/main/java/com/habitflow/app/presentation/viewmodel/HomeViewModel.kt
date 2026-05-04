@@ -27,6 +27,9 @@ data class HomeUiState(
     val selectedDate: LocalDate = LocalDate.now(),   // Which date the chip row is showing
 )
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 /**
  * FEATURE D — State & User Interaction
  *
@@ -44,7 +47,10 @@ data class HomeUiState(
  * All coroutines run in `viewModelScope` — they cancel automatically when
  * the user permanently leaves the screen.
  */
-class HomeViewModel(private val repository: HabitRepository) : ViewModel() {
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val repository: HabitRepository
+) : ViewModel() {
 
     // Tracks which date the user has selected in the date chip row
     private val _selectedDate = MutableStateFlow(LocalDate.now())

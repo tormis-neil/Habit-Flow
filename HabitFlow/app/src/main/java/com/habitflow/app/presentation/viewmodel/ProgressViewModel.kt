@@ -26,6 +26,9 @@ data class ProgressUiState(
     val weeklyProgressMap: Map<Long, List<Boolean>> = emptyMap(),
 )
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 /**
  * FEATURE D — State & User Interaction
  *
@@ -40,7 +43,10 @@ data class ProgressUiState(
  * This keeps the Progress screen purely declarative — it only renders numbers,
  * never computes them.
  */
-class ProgressViewModel(private val repository: HabitRepository) : ViewModel() {
+@HiltViewModel
+class ProgressViewModel @Inject constructor(
+    private val repository: HabitRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProgressUiState())
     val uiState: StateFlow<ProgressUiState> = _uiState.asStateFlow()
