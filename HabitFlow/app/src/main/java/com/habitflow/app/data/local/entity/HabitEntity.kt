@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitFrequency
 import java.time.LocalDate
+import java.util.UUID
 
 /**
  * FEATURE B — Local Data Persistence (Room)
@@ -38,6 +39,28 @@ data class HabitEntity(
 
     // The habit's accent color stored as a hex string, e.g. "#6750A4"
     val color: String = "#6750A4",
+
+    // --- Sync Metadata ---
+    val uuid: String = UUID.randomUUID().toString(),
+    
+    @ColumnInfo(name = "user_id")
+    val userId: String? = null,
+    
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: Long = System.currentTimeMillis(),
+    
+    @ColumnInfo(name = "is_deleted")
+    val isDeleted: Boolean = false,
+    
+    @ColumnInfo(name = "is_synced")
+    val isSynced: Boolean = false,
+    
+    // --- Reminders ---
+    @ColumnInfo(name = "reminder_time")
+    val reminderTime: String? = null,
+    
+    @ColumnInfo(name = "reminder_enabled")
+    val reminderEnabled: Boolean = false,
 )
 
 /**
@@ -61,10 +84,19 @@ fun HabitEntity.toHabit(
     longestStreak = longestStreak,
     totalCompletions = totalCompletions,
     color = color,
+    // Note: domain model Habit does not currently know about uuid, updatedAt etc.
 )
 
 /** Converts an app model (Habit) → database row (HabitEntity) before saving. */
-fun Habit.toEntity() = HabitEntity(
+fun Habit.toEntity(
+    uuid: String = UUID.randomUUID().toString(),
+    userId: String? = null,
+    updatedAt: Long = System.currentTimeMillis(),
+    isDeleted: Boolean = false,
+    isSynced: Boolean = false,
+    reminderTime: String? = null,
+    reminderEnabled: Boolean = false
+) = HabitEntity(
     id = id,
     title = title,
     description = description,
@@ -72,4 +104,11 @@ fun Habit.toEntity() = HabitEntity(
     startDate = startDate.toEpochDay(), // Convert date to a number for storage
     isEnabled = isEnabled,
     color = color,
+    uuid = uuid,
+    userId = userId,
+    updatedAt = updatedAt,
+    isDeleted = isDeleted,
+    isSynced = isSynced,
+    reminderTime = reminderTime,
+    reminderEnabled = reminderEnabled
 )

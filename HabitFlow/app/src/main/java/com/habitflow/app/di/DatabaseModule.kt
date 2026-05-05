@@ -24,4 +24,9 @@ object DatabaseModule {
     fun provideHabitDao(database: HabitDatabase): HabitDao {
         return database.habitDao()
     }
+
+    @Provides
+    fun provideUserDao(database: HabitDatabase): com.habitflow.app.data.local.dao.UserDao {
+        return database.userDao()
+    }
 }
