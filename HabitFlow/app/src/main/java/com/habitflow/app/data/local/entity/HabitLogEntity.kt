@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 /**
  * FEATURE B — Local Data Persistence (Room)
@@ -46,4 +47,19 @@ data class HabitLogEntity(
 
     // The exact moment the user tapped "complete", stored as a Unix timestamp (milliseconds)
     val timestamp: Long = System.currentTimeMillis(),
+
+    // --- Sync Metadata ---
+    val uuid: String = UUID.randomUUID().toString(),
+    
+    @ColumnInfo(name = "user_id")
+    val userId: String? = null,
+    
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: Long = System.currentTimeMillis(),
+    
+    @ColumnInfo(name = "is_deleted")
+    val isDeleted: Boolean = false,
+    
+    @ColumnInfo(name = "is_synced")
+    val isSynced: Boolean = false,
 )

@@ -102,40 +102,37 @@ class RoomHabitRepository @Inject constructor(
 
     /** Creates a new habit in the database and returns its auto-assigned ID. */
     override suspend fun addHabit(habit: Habit): Long {
-        val entity = HabitEntity(
-            title = habit.title,
-            description = habit.description,
-            frequency = habit.frequency.name,
-            startDate = habit.startDate.toEpochDay(),
-            isEnabled = habit.isEnabled,
-            color = habit.color,
-        )
-        return dao.upsertHabit(entity)
+        return dao.upsertHabit(habit.toEntity())
     }
 
     /** Saves an updated habit, preserving its existing ID so it overwrites the old row. */
     override suspend fun updateHabit(habit: Habit) {
-        dao.upsertHabit(
-            HabitEntity(
-                id = habit.id, // ID must be included so Room knows which row to update
+        val existingEntity = dao.getHabitById(habit.id)
+        val entity = if (existingEntity != null) {
+            existingEntity.copy(
                 title = habit.title,
                 description = habit.description,
                 frequency = habit.frequency.name,
                 startDate = habit.startDate.toEpochDay(),
                 isEnabled = habit.isEnabled,
                 color = habit.color,
+                updatedAt = System.currentTimeMillis(),
+                isSynced = false
             )
-        )
+        } else {
+            habit.toEntity()
+        }
+        dao.upsertHabit(entity)
     }
 
     /** Permanently deletes a habit — the associated logs are removed automatically via CASCADE. */
     override suspend fun deleteHabit(habitId: Long) {
-        dao.deleteHabit(habitId)
+        dao.deleteHabit(habitId, System.currentTimeMillis())
     }
 
     /** Flips the habit's active/paused state in the database. */
     override suspend fun setEnabled(habitId: Long, enabled: Boolean) {
-        dao.setEnabled(habitId, enabled)
+        dao.setEnabled(habitId, enabled, System.currentTimeMillis())
     }
 
     /**
