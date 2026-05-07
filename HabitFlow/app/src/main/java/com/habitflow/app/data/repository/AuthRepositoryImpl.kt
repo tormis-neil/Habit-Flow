@@ -44,20 +44,21 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun signUp(email: String, password: String, username: String): Result<Unit> =
-        runCatching {
-            val user = authDataSource.createUser(email, password)
-            userRepository.createProfile(user.uid, email, username).getOrThrow()
-        }
+    override suspend fun signUp(email: String, password: String, username: String) {
+        val user = authDataSource.createUser(email, password)
+        userRepository.createProfile(user.uid, email, username)
+    }
 
-    override suspend fun signIn(email: String, password: String): Result<Unit> =
-        runCatching { authDataSource.signIn(email, password) }
+    override suspend fun signIn(email: String, password: String) {
+        authDataSource.signIn(email, password)
+    }
 
     override suspend fun signOut() {
         authDataSource.signOut()
         userRepository.clearProfile()
     }
 
-    override suspend fun sendPasswordReset(email: String): Result<Unit> =
-        runCatching { authDataSource.sendPasswordReset(email) }
+    override suspend fun sendPasswordReset(email: String) {
+        authDataSource.sendPasswordReset(email)
+    }
 }

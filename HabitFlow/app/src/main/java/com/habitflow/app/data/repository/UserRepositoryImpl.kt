@@ -15,35 +15,34 @@ class UserRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
 ) : UserRepository {
 
-    override suspend fun createProfile(uid: String, email: String, username: String): Result<Unit> =
-        runCatching {
-            val usernameLower = username.lowercase()
-            val now = System.currentTimeMillis()
+    override suspend fun createProfile(uid: String, email: String, username: String) {
+        val usernameLower = username.lowercase()
+        val now = System.currentTimeMillis()
 
-            // Atomically reserve the username and write the profile doc (AUTH-4).
-            // The transaction fails if the username is already taken.
-            firestore.runTransaction { tx ->
-                val usernameRef = firestore.collection("usernames").document(usernameLower)
-                if (tx.get(usernameRef).exists()) {
-                    throw IllegalStateException("Username \"$username\" is already taken")
-                }
-                tx.set(usernameRef, mapOf("uid" to uid))
-                tx.set(
-                    firestore.collection("users").document(uid),
-                    mapOf(
-                        "email" to email,
-                        "username" to username,
-                        "usernameLower" to usernameLower,
-                        "createdAt" to now,
-                    ),
-                )
-            }.await()
-
-            // Cache profile locally so SettingsScreen can display the username offline.
-            userDao.insertProfile(
-                UserProfileEntity(uid = uid, email = email, username = username, createdAt = now),
+        // Atomically reserve the username and write the profile doc (AUTH-4).
+        // The transaction throws if the username is already taken.
+        firestore.runTransaction { tx ->
+            val usernameRef = firestore.collection("usernames").document(usernameLower)
+            if (tx.get(usernameRef).exists()) {
+                throw IllegalStateException("Username \"$username\" is already taken")
+            }
+            tx.set(usernameRef, mapOf("uid" to uid))
+            tx.set(
+                firestore.collection("users").document(uid),
+                mapOf(
+                    "email" to email,
+                    "username" to username,
+                    "usernameLower" to usernameLower,
+                    "createdAt" to now,
+                ),
             )
-        }
+        }.await()
+
+        // Cache profile locally so SettingsScreen can display the username offline.
+        userDao.insertProfile(
+            UserProfileEntity(uid = uid, email = email, username = username, createdAt = now),
+        )
+    }
 
     override suspend fun getCachedProfile(): UserProfile? =
         userDao.getProfile()?.let {

@@ -30,27 +30,36 @@ class AuthViewModel @Inject constructor(
     fun signUp(email: String, password: String, username: String) {
         viewModelScope.launch {
             _uiState.value = AuthUiState(isLoading = true)
-            authRepository.signUp(email.trim(), password, username.trim())
-                .onSuccess { _uiState.value = AuthUiState() }
-                .onFailure { _uiState.value = AuthUiState(error = it.message) }
+            try {
+                authRepository.signUp(email.trim(), password, username.trim())
+                _uiState.value = AuthUiState()
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState(error = e.message ?: "Sign-up failed")
+            }
         }
     }
 
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
             _uiState.value = AuthUiState(isLoading = true)
-            authRepository.signIn(email.trim(), password)
-                .onSuccess { _uiState.value = AuthUiState() }
-                .onFailure { _uiState.value = AuthUiState(error = it.message) }
+            try {
+                authRepository.signIn(email.trim(), password)
+                _uiState.value = AuthUiState()
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState(error = e.message ?: "Sign-in failed")
+            }
         }
     }
 
     fun sendPasswordReset(email: String) {
         viewModelScope.launch {
             _uiState.value = AuthUiState(isLoading = true)
-            authRepository.sendPasswordReset(email.trim())
-                .onSuccess { _uiState.value = AuthUiState(passwordResetSent = true) }
-                .onFailure { _uiState.value = AuthUiState(error = it.message) }
+            try {
+                authRepository.sendPasswordReset(email.trim())
+                _uiState.value = AuthUiState(passwordResetSent = true)
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState(error = e.message ?: "Reset failed")
+            }
         }
     }
 

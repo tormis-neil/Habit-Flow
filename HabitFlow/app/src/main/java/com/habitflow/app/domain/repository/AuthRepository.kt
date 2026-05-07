@@ -6,8 +6,11 @@ import kotlinx.coroutines.flow.StateFlow
 interface AuthRepository {
     val authState: StateFlow<AuthState>
     val currentUserId: String?
-    suspend fun signUp(email: String, password: String, username: String): Result<Unit>
-    suspend fun signIn(email: String, password: String): Result<Unit>
+    /** @throws Exception on network error, wrong credentials, etc. */
+    suspend fun signUp(email: String, password: String, username: String)
+    /** @throws Exception on network error or wrong credentials. */
+    suspend fun signIn(email: String, password: String)
     suspend fun signOut()
-    suspend fun sendPasswordReset(email: String): Result<Unit>
+    /** @throws Exception if the email is not registered or network fails. */
+    suspend fun sendPasswordReset(email: String)
 }
