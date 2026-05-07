@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.repository.HabitRepository
 import com.habitflow.app.domain.util.HabitConstants
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * FEATURE D — State & User Interaction
@@ -25,9 +27,6 @@ data class ProgressUiState(
     /** Pre-computed Mon–Sun booleans per habit — avoids recalculating in the screen. */
     val weeklyProgressMap: Map<Long, List<Boolean>> = emptyMap(),
 )
-
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 /**
  * FEATURE D — State & User Interaction
