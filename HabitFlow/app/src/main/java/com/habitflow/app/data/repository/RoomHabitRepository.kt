@@ -3,6 +3,7 @@ package com.habitflow.app.data.repository
 import com.habitflow.app.data.local.dao.HabitDao
 import com.habitflow.app.data.local.entity.HabitLogEntity
 import com.habitflow.app.data.local.entity.toHabit
+import com.habitflow.app.data.local.entity.toEntity
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitFrequency
 import com.habitflow.app.domain.repository.HabitRepository
