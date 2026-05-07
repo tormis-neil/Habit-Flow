@@ -4,73 +4,78 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.habitflow.app.domain.model.AuthState
+import com.habitflow.app.presentation.ui.screens.auth.SignInScreen
+import com.habitflow.app.presentation.ui.screens.auth.SignUpScreen
 import com.habitflow.app.presentation.ui.screens.habits.HabitDetailScreen
 import com.habitflow.app.presentation.ui.screens.habits.HabitFormScreen
 import com.habitflow.app.presentation.ui.screens.home.HomeScreen
 import com.habitflow.app.presentation.ui.screens.progress.ProgressScreen
 import com.habitflow.app.presentation.ui.screens.settings.SettingsScreen
+import com.habitflow.app.presentation.viewmodel.AuthViewModel
 
-/**
- * FEATURE C — Jetpack Compose UI
- *
- * Screen is a sealed class that defines all the ROUTES (pages) in the app.
- * Think of each route like a web URL — the app navigates between them.
- *
- * Sealed class means no other file can add new screens accidentally —
- * all possible destinations are listed here in one place.
- */
 sealed class Screen(val route: String) {
-    data object Home       : Screen("home")             // The main habit list
-    data object Progress   : Screen("progress")          // Progress & stats overview
-    data object Settings   : Screen("settings")          // Theme settings
-    data object HabitCreate: Screen("habit/create")      // Create a new habit
+    data object SignIn    : Screen("auth/signin")
+    data object SignUp    : Screen("auth/signup")
+    data object Home     : Screen("home")
+    data object Progress : Screen("progress")
+    data object Settings : Screen("settings")
+    data object HabitCreate : Screen("habit/create")
 
-    // Edit and Detail carry a habitId in the route (like a URL parameter)
-    data object HabitEdit  : Screen("habit/{habitId}/edit") {
+    data object HabitEdit : Screen("habit/{habitId}/edit") {
         fun createRoute(habitId: Long) = "habit/$habitId/edit"
     }
-    data object HabitDetail: Screen("habit/{habitId}/detail") {
+    data object HabitDetail : Screen("habit/{habitId}/detail") {
         fun createRoute(habitId: Long) = "habit/$habitId/detail"
     }
 }
 
-// Animation duration for all screen transitions (in milliseconds)
 private const val ANIM_DURATION = 300
 
-/**
- * HabitFlowNavGraph is the app's NAVIGATION MAP — it defines which screen shows
- * for each route and how screens animate in and out.
- *
- * Every composable() block below is one screen destination. The NavHost starts
- * at the Home screen and handles back-stack (going back to previous screens).
- *
- * Each screen receives its ViewModel via Hilt, which injects the
- * dependencies automatically.
- */
 @Composable
-fun HabitFlowNavGraph(
-    navController: NavHostController,
-) {
+fun HabitFlowNavGraph(navController: NavHostController) {
+    // Auth state is observed at the graph level so it survives screen navigation.
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val authState by authViewModel.authState.collectAsStateWithLifecycle()
+
+    // Show a loading spinner while Firebase checks the stored token.
+    // Returning early prevents NavHost from flashing the wrong start destination.
+    if (authState is AuthState.Loading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val startDestination = if (authState is AuthState.Authenticated)
+        Screen.Home.route else Screen.SignIn.route
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route, // The app always opens on Home
-        // Slide in from the right when navigating forward
+        startDestination = startDestination,
         enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Start,
                 animationSpec = tween(ANIM_DURATION),
             )
         },
-        exitTransition = { fadeOut(tween(ANIM_DURATION)) },    // Fade out when leaving
-        popEnterTransition = { fadeIn(tween(ANIM_DURATION)) }, // Fade in when going back
-        // Slide out to the right when pressing back
+        exitTransition = { fadeOut(tween(ANIM_DURATION)) },
+        popEnterTransition = { fadeIn(tween(ANIM_DURATION)) },
         popExitTransition = {
             slideOutOfContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.End,
@@ -78,6 +83,20 @@ fun HabitFlowNavGraph(
             )
         },
     ) {
+        // ── Auth ──────────────────────────────────────────────────────────────
+        composable(Screen.SignIn.route) {
+            SignInScreen(
+                viewModel = authViewModel,
+                onNavigateToSignUp = { navController.navigate(Screen.SignUp.route) },
+            )
+        }
+        composable(Screen.SignUp.route) {
+            SignUpScreen(
+                viewModel = authViewModel,
+                onNavigateToSignIn = { navController.popBackStack() },
+            )
+        }
+
         // ── Home ──────────────────────────────────────────────────────────────
         composable(Screen.Home.route) {
             HomeScreen(
@@ -111,11 +130,11 @@ fun HabitFlowNavGraph(
             HabitFormScreen(
                 viewModel      = hiltViewModel(),
                 onNavigateBack = { navController.popBackStack() },
-                onSaved        = { navController.popBackStack() }, // Go back after saving
+                onSaved        = { navController.popBackStack() },
             )
         }
 
-        // ── Edit Habit — requires a habitId in the route ──────────────────────
+        // ── Edit Habit ───────────────────────────────────────────────────────
         composable(
             route = Screen.HabitEdit.route,
             arguments = listOf(navArgument("habitId") { type = NavType.LongType }),
@@ -127,18 +146,40 @@ fun HabitFlowNavGraph(
             )
         }
 
-        // ── Habit Detail — requires a habitId in the route ────────────────────
+        // ── Habit Detail ─────────────────────────────────────────────────────
         composable(
             route = Screen.HabitDetail.route,
             arguments = listOf(navArgument("habitId") { type = NavType.LongType }),
         ) {
             HabitDetailScreen(
-                viewModel       = hiltViewModel(),
-                onNavigateBack  = { navController.popBackStack() },
+                viewModel        = hiltViewModel(),
+                onNavigateBack   = { navController.popBackStack() },
                 onNavigateToEdit = { id -> navController.navigate(Screen.HabitEdit.createRoute(id)) },
-                onDeleted        = { navController.popBackStack() }, // Go back after deleting
+                onDeleted        = { navController.popBackStack() },
             )
         }
     }
-}
 
+    // React to auth state changes after the NavHost is first rendered.
+    // Guard against re-navigating when already at the target destination.
+    LaunchedEffect(authState) {
+        val current = navController.currentDestination?.route
+        when (authState) {
+            is AuthState.Authenticated -> {
+                if (current == Screen.SignIn.route || current == Screen.SignUp.route) {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            }
+            AuthState.Unauthenticated -> {
+                if (current != Screen.SignIn.route) {
+                    navController.navigate(Screen.SignIn.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            }
+            else -> {}
+        }
+    }
+}

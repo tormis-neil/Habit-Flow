@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.habitflow.app.R
 import com.habitflow.app.presentation.viewmodel.SettingsViewModel
+import com.habitflow.app.domain.model.UserProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,8 +26,29 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     val darkModeEnabled by viewModel.isDarkMode.collectAsStateWithLifecycle()
+    val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
     var notificationsEnabled by remember { mutableStateOf(true) }
     var weeklyReportEnabled by remember { mutableStateOf(false) }
+    var showSignOutDialog by remember { mutableStateOf(false) }
+
+    if (showSignOutDialog) {
+        AlertDialog(
+            onDismissRequest = { showSignOutDialog = false },
+            title = { Text(stringResource(R.string.settings_sign_out)) },
+            text = { Text(stringResource(R.string.settings_sign_out_confirm)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.signOut()
+                    showSignOutDialog = false
+                }) { Text(stringResource(R.string.settings_sign_out)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSignOutDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -48,6 +70,14 @@ fun SettingsScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            // Account
+            SettingsSection(title = stringResource(R.string.settings_section_account)) {
+                SettingsAccountRow(
+                    profile = userProfile,
+                    onSignOut = { showSignOutDialog = true },
+                )
+            }
+
             // Appearance
             SettingsSection(title = stringResource(R.string.settings_section_appearance)) {
                 SettingsSwitchRow(
@@ -119,6 +149,45 @@ fun SettingsScreen(
             )
 
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun SettingsAccountRow(
+    profile: UserProfile?,
+    onSignOut: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            Icons.Default.AccountCircle,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp),
+        )
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                profile?.username ?: "Not signed in",
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                profile?.email ?: "",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        FilledTonalButton(
+            onClick = onSignOut,
+            modifier = Modifier.height(32.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp),
+        ) {
+            Text("Sign Out", style = MaterialTheme.typography.labelSmall)
         }
     }
 }
