@@ -3,16 +3,18 @@ package com.habitflow.app.presentation.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.habitflow.app.R
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitFrequency
 import com.habitflow.app.domain.repository.HabitRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import com.habitflow.app.R
+import javax.inject.Inject
 
 /**
  * FEATURE D — State & User Interaction
@@ -31,9 +33,6 @@ data class HabitFormUiState(
     val isSaved: Boolean = false,                        // Triggers navigation back when true
     val titleError: Int? = null,                         // String resource ID for validation error
 )
-
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 /**
  * FEATURE D — State & User Interaction

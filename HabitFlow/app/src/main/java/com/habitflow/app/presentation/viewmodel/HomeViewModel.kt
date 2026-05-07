@@ -1,4 +1,4 @@
-    package com.habitflow.app.presentation.viewmodel
+package com.habitflow.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,12 +6,14 @@ import com.habitflow.app.domain.model.DailyProgress
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitFrequency
 import com.habitflow.app.domain.repository.HabitRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import javax.inject.Inject
 
 /**
  * FEATURE D — State & User Interaction
@@ -26,9 +28,6 @@ data class HomeUiState(
     val dailyProgress: DailyProgress = DailyProgress(LocalDate.now(), 0, 0), // Progress bar data
     val selectedDate: LocalDate = LocalDate.now(),   // Which date the chip row is showing
 )
-
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 /**
  * FEATURE D — State & User Interaction
