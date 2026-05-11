@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── User profiles ────────────────────────────────────────────────────────
+    // A user may only read and write their own profile document.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      // All sub-collections under a user (habits, habit_logs) are also restricted
+      // to that user only — no other authenticated user may access them.
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // ── Username reservation ─────────────────────────────────────────────────
+    // Any signed-in user may READ to check if a username is available.
+    // A signed-in user may CREATE a username reservation only if the uid field
+    // matches their own uid (prevents squatting on another user's slot).
+    // A signed-in user may DELETE their own username reservation (needed for
+    // a future "change username" feature and sign-out cleanup).
+    match /usernames/{username} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+      // Updates are not allowed — username reservation is immutable once created.
+    }
+  }
+}
