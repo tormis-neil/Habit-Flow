@@ -37,13 +37,25 @@ interface HabitDao {
     @Query("SELECT * FROM habits WHERE is_deleted = 0 ORDER BY id ASC")
     fun getAllHabits(): Flow<List<HabitEntity>>
 
+    /** Returns only habits belonging to a specific user — used by HabitRepositoryImpl (Day 5). */
+    @Query("SELECT * FROM habits WHERE is_deleted = 0 AND user_id = :userId ORDER BY id ASC")
+    fun getAllHabitsByUser(userId: String): Flow<List<HabitEntity>>
+
     /** Returns only habits that are currently enabled (not paused). */
     @Query("SELECT * FROM habits WHERE is_enabled = 1 AND is_deleted = 0 ORDER BY id ASC")
     fun getActiveHabits(): Flow<List<HabitEntity>>
 
+    /** Returns all logs for habits owned by a specific user — used by HabitRepositoryImpl (Day 5). */
+    @Query("SELECT * FROM habit_logs WHERE is_deleted = 0 AND user_id = :userId ORDER BY date_completed DESC")
+    fun getAllLogsByUser(userId: String): Flow<List<HabitLogEntity>>
+
     /** Fetches a single habit by its ID — used when opening the detail or edit screen. */
     @Query("SELECT * FROM habits WHERE id = :id AND is_deleted = 0")
     suspend fun getHabitById(id: Long): HabitEntity?
+
+    /** Same as [getHabitById] but includes soft-deleted rows — needed to push tombstones. */
+    @Query("SELECT * FROM habits WHERE id = :id")
+    suspend fun getHabitByIdIncludeDeleted(id: Long): HabitEntity?
 
     /** Soft-deletes a habit row by marking it as deleted. */
     @Query("UPDATE habits SET is_deleted = 1, is_synced = 0, updated_at = :timestamp WHERE id = :habitId")
@@ -62,6 +74,10 @@ interface HabitDao {
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertLog(log: HabitLogEntity)
+
+    /** Upserts a log entry — used to stamp user_id or update sync metadata. */
+    @Upsert
+    suspend fun upsertLog(log: HabitLogEntity)
 
     /** Soft-removes a completion log — used when the user un-checks a habit. */
     @Query("UPDATE habit_logs SET is_deleted = 1, is_synced = 0, updated_at = :timestamp WHERE habit_id = :habitId AND date_completed = :dateCompleted")
