@@ -24,7 +24,7 @@ import javax.inject.Inject
 class HabitFlowApplication : Application(), Configuration.Provider {
 
     @Inject
-    lateinit val workerFactory: HiltWorkerFactory
+    lateinit var workerFactory: HiltWorkerFactory
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
