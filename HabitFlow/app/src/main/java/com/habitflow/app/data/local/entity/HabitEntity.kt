@@ -84,7 +84,8 @@ fun HabitEntity.toHabit(
     longestStreak = longestStreak,
     totalCompletions = totalCompletions,
     color = color,
-    // Note: domain model Habit does not currently know about uuid, updatedAt etc.
+    reminderTime = reminderTime,
+    reminderEnabled = reminderEnabled
 )
 
 /** Converts an app model (Habit) → database row (HabitEntity) before saving. */

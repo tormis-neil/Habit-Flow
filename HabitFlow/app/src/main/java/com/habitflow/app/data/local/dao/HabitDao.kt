@@ -41,6 +41,10 @@ interface HabitDao {
     @Query("SELECT * FROM habits WHERE is_deleted = 0 AND user_id = :userId ORDER BY id ASC")
     fun getAllHabitsByUser(userId: String): Flow<List<HabitEntity>>
 
+    /** Returns all habits synchronously (used by BootReceiver). */
+    @Query("SELECT * FROM habits WHERE is_deleted = 0 ORDER BY id ASC")
+    suspend fun getAllHabitsSync(): List<HabitEntity>
+
     /** Returns only habits that are currently enabled (not paused). */
     @Query("SELECT * FROM habits WHERE is_enabled = 1 AND is_deleted = 0 ORDER BY id ASC")
     fun getActiveHabits(): Flow<List<HabitEntity>>

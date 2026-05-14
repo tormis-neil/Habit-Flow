@@ -15,6 +15,8 @@ data class Habit(
     val longestStreak: Int = 0,
     val totalCompletions: Int = 0,
     val color: String = "#6750A4",
+    val reminderTime: String? = null,
+    val reminderEnabled: Boolean = false,
 )
 
 data class DailyProgress(
