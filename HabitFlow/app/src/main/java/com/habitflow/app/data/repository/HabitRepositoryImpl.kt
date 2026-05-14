@@ -12,6 +12,7 @@ import com.habitflow.app.domain.repository.AuthRepository
 import com.habitflow.app.domain.repository.HabitRepository
 import com.habitflow.app.domain.util.StreakCalculator
 import com.habitflow.app.data.local.entity.HabitEntity
+import com.habitflow.app.data.notification.ReminderScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -50,6 +51,7 @@ class HabitRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
     private val habitDataSource: FirestoreHabitDataSource,
     private val logDataSource: FirestoreLogDataSource,
+    private val reminderScheduler: ReminderScheduler,
 ) : HabitRepository {
 
     // Background scope: lives as long as the app process, like AuthRepositoryImpl.
@@ -160,8 +162,11 @@ class HabitRepositoryImpl @Inject constructor(
         val uid = currentUid
         val entity = habit.toEntity(userId = uid, isSynced = false)
         val id = dao.upsertHabit(entity)
+        val habitWithId = habit.copy(id = id)
         // Push with the auto-assigned id so the entity is complete
         syncHabitNow(entity.copy(id = id))
+        // Schedule reminder for the new habit
+        reminderScheduler.scheduleReminder(habitWithId)
         return id
     }
 
@@ -179,6 +184,8 @@ class HabitRepositoryImpl @Inject constructor(
                 startDate   = habit.startDate.toEpochDay(),
                 isEnabled   = habit.isEnabled,
                 color       = habit.color,
+                reminderTime = habit.reminderTime,
+                reminderEnabled = habit.reminderEnabled,
                 updatedAt   = System.currentTimeMillis(),
                 isSynced    = false,
             )
@@ -187,6 +194,8 @@ class HabitRepositoryImpl @Inject constructor(
         }
         dao.upsertHabit(entity)
         syncHabitNow(entity)
+        // Reschedule reminder based on the updated habit
+        reminderScheduler.scheduleReminder(habit)
     }
 
     /**
@@ -197,6 +206,8 @@ class HabitRepositoryImpl @Inject constructor(
         val uid = currentUid
         val timestamp = System.currentTimeMillis()
         dao.deleteHabit(habitId, timestamp)
+        // Cancel reminder for the deleted habit
+        reminderScheduler.cancelReminder(habitId)
 
         // Push tombstone to Firestore
         if (uid != null) {
@@ -215,7 +226,11 @@ class HabitRepositoryImpl @Inject constructor(
     override suspend fun setEnabled(habitId: Long, enabled: Boolean) {
         val timestamp = System.currentTimeMillis()
         dao.setEnabled(habitId, enabled, timestamp)
-        dao.getHabitById(habitId)?.let { syncHabitNow(it) }
+        val habit = getHabitById(habitId)
+        if (habit != null) {
+            syncHabitNow(habit.toEntity(isSynced = false))
+            reminderScheduler.scheduleReminder(habit)
+        }
     }
 
     /**

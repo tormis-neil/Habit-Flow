@@ -77,4 +77,31 @@ class NotificationHelper @Inject constructor(
         // Random ID for the debug notification
         notificationManager.notify(9999, builder.build())
     }
+
+    /**
+     * Posts a reminder notification for a specific habit.
+     */
+    fun showHabitReminder(habitId: Long, habitTitle: String) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("habit_id", habitId)
+        }
+        
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            habitId.toInt(),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_popup_reminder)
+            .setContentTitle("Habit Reminder")
+            .setContentText("Time to: $habitTitle")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        notificationManager.notify(habitId.toInt(), builder.build())
+    }
 }
