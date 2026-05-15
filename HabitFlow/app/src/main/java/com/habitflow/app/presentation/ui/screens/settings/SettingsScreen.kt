@@ -27,7 +27,7 @@ fun SettingsScreen(
 ) {
     val darkModeEnabled by viewModel.isDarkMode.collectAsStateWithLifecycle()
     val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
-    var notificationsEnabled by remember { mutableStateOf(true) }
+    val notificationsEnabled by viewModel.dailyRemindersEnabled.collectAsStateWithLifecycle()
     var weeklyReportEnabled by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
 
@@ -96,7 +96,7 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_notifications),
                     subtitle = stringResource(R.string.settings_notifications_subtitle),
                     checked = notificationsEnabled,
-                    onCheckedChange = { notificationsEnabled = it },
+                    onCheckedChange = viewModel::setDailyRemindersEnabled,
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 SettingsSwitchRow(
