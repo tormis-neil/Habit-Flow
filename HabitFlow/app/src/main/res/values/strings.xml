@@ -23,6 +23,9 @@
     <string name="label_color">Color</string>
     <string name="tips_title">💡 Tips for good habits</string>
     <string name="tips_body">• Start small — 5 minutes beats 0\n• Be specific about when you\'ll do it\n• Link it to an existing routine</string>
+    <string name="label_reminder">Daily Reminder</string>
+    <string name="label_reminder_off">Off</string>
+    <string name="action_set_time">Set Time</string>
 
     <!-- Frequency -->
     <string name="frequency_daily">Daily</string>
