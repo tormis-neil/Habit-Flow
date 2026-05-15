@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import com.habitflow.app.R
 import com.habitflow.app.domain.model.HabitFrequency
 import com.habitflow.app.presentation.ui.theme.habitColorOptions
@@ -47,6 +50,46 @@ fun HabitFormScreen(
 ) {
     // Collect live state from the ViewModel — UI rebuilds automatically on changes
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var showTimePicker by remember { mutableStateOf(false) }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
+
+    val initialTime = remember(uiState.reminderTime) {
+        try {
+            LocalTime.parse(uiState.reminderTime, timeFormatter)
+        } catch (e: Exception) {
+            LocalTime.of(8, 0)
+        }
+    }
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialTime.hour,
+        initialMinute = initialTime.minute,
+        is24Hour = true
+    )
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val formatted = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                    viewModel.onReminderTimeChange(formatted)
+                    showTimePicker = false
+                }) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
 
     // LaunchedEffect runs once when `isSaved` becomes true — triggers navigation back
     LaunchedEffect(uiState.isSaved) { if (uiState.isSaved) onSaved() }
@@ -133,6 +176,36 @@ fun HabitFormScreen(
                         // Checkmark overlay on the selected color circle
                         if (isSelected) Icon(Icons.Default.Check, name, tint = Color.White, modifier = Modifier.size(18.dp))
                     }
+                }
+            }
+
+            // ── Reminder ──────────────────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(stringResource(R.string.label_reminder), style = MaterialTheme.typography.titleSmall)
+                    if (uiState.reminderEnabled) {
+                        Text(uiState.reminderTime, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    } else {
+                        Text(stringResource(R.string.label_reminder_off), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Switch(
+                    checked = uiState.reminderEnabled,
+                    onCheckedChange = viewModel::onReminderEnabledChange
+                )
+            }
+            if (uiState.reminderEnabled) {
+                OutlinedButton(
+                    onClick = { showTimePicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Notifications, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.action_set_time))
                 }
             }
 

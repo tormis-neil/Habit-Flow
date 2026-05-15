@@ -32,6 +32,8 @@ data class HabitFormUiState(
     val isEditing: Boolean = false,                      // True = edit mode, False = create mode
     val isSaved: Boolean = false,                        // Triggers navigation back when true
     val titleError: Int? = null,                         // String resource ID for validation error
+    val reminderEnabled: Boolean = false,
+    val reminderTime: String = "08:00",                  // Default time
 )
 
 /**
@@ -78,6 +80,8 @@ class HabitFormViewModel @Inject constructor(
                             description = habit.description,
                             frequency   = habit.frequency,
                             color       = habit.color,
+                            reminderEnabled = habit.reminderEnabled,
+                            reminderTime = habit.reminderTime ?: "08:00",
                         )
                     }
                 }
@@ -92,6 +96,8 @@ class HabitFormViewModel @Inject constructor(
     fun onDescriptionChange(v: String)    = _uiState.update { it.copy(description = v) }
     fun onFrequencyChange(v: HabitFrequency) = _uiState.update { it.copy(frequency = v) }
     fun onColorChange(v: String)          = _uiState.update { it.copy(color = v) }
+    fun onReminderEnabledChange(v: Boolean) = _uiState.update { it.copy(reminderEnabled = v) }
+    fun onReminderTimeChange(v: String)   = _uiState.update { it.copy(reminderTime = v) }
 
     /** Validates the form and, if valid, saves the habit to the database. */
     fun onSave() {
@@ -114,6 +120,8 @@ class HabitFormViewModel @Inject constructor(
                             description = s.description.trim(),
                             frequency   = s.frequency,
                             color       = s.color,
+                            reminderEnabled = s.reminderEnabled,
+                            reminderTime = if (s.reminderEnabled) s.reminderTime else null,
                         )
                     )
                 }
@@ -126,6 +134,8 @@ class HabitFormViewModel @Inject constructor(
                         frequency   = s.frequency,
                         startDate   = LocalDate.now(),
                         color       = s.color,
+                        reminderEnabled = s.reminderEnabled,
+                        reminderTime = if (s.reminderEnabled) s.reminderTime else null,
                     )
                 )
             }
