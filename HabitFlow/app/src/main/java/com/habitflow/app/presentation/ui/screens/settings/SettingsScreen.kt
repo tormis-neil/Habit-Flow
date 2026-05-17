@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.habitflow.app.R
+import com.habitflow.app.presentation.viewmodel.AuthViewModel
 import com.habitflow.app.presentation.viewmodel.SettingsViewModel
 import com.habitflow.app.domain.model.UserProfile
 
@@ -23,6 +24,7 @@ import com.habitflow.app.domain.model.UserProfile
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
+    authViewModel: AuthViewModel,
     onNavigateBack: () -> Unit,
 ) {
     val darkModeEnabled by viewModel.isDarkMode.collectAsStateWithLifecycle()
@@ -30,12 +32,19 @@ fun SettingsScreen(
     val notificationsEnabled by viewModel.dailyRemindersEnabled.collectAsStateWithLifecycle()
     var weeklyReportEnabled by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
+    val isOffline = !authViewModel.isNetworkAvailable()
 
     if (showSignOutDialog) {
         AlertDialog(
             onDismissRequest = { showSignOutDialog = false },
             title = { Text(stringResource(R.string.settings_sign_out)) },
-            text = { Text(stringResource(R.string.settings_sign_out_confirm)) },
+            text = {
+                if (isOffline) {
+                    Text("⚠️ You are offline. If you sign out now, you won't be able to sign back in until you reconnect to the internet. Are you sure?")
+                } else {
+                    Text(stringResource(R.string.settings_sign_out_confirm))
+                }
+            },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.signOut()

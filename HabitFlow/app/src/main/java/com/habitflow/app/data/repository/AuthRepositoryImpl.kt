@@ -36,10 +36,16 @@ class AuthRepositoryImpl @Inject constructor(
     init {
         // Keep _authState in sync with Firebase whenever the token changes
         // (sign-in, sign-out, token revocation, etc.).
+        // Also warm the local Room profile cache after every successful sign-in so
+        // the Settings screen can immediately show the correct account info.
         scope.launch {
             authDataSource.authStateFlow.collect { user ->
                 _authState.value = if (user != null) AuthState.Authenticated(user.uid)
                                    else AuthState.Unauthenticated
+                if (user != null) {
+                    // Best-effort: silently ignored if network is unavailable
+                    userRepository.fetchAndCacheProfile(user.uid)
+                }
             }
         }
     }

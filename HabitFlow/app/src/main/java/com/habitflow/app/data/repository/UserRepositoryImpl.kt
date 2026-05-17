@@ -49,5 +49,24 @@ class UserRepositoryImpl @Inject constructor(
             UserProfile(uid = it.uid, email = it.email, username = it.username, createdAt = it.createdAt)
         }
 
+    /**
+     * Fetches the user profile from Firestore and writes it to the local Room cache.
+     * Called after every successful sign-in so Settings always shows the correct account.
+     * Silently ignores network failures — the cached value from the last successful fetch is used.
+     */
+    override suspend fun fetchAndCacheProfile(uid: String) {
+        try {
+            val doc = firestore.collection("users").document(uid).get().await()
+            val email    = doc.getString("email")    ?: return
+            val username = doc.getString("username") ?: return
+            val createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis()
+            userDao.insertProfile(
+                UserProfileEntity(uid = uid, email = email, username = username, createdAt = createdAt)
+            )
+        } catch (_: Exception) {
+            // Network unavailable — keep whatever is already cached in Room
+        }
+    }
+
     override suspend fun clearProfile() = userDao.deleteProfile()
 }

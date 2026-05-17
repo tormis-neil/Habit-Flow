@@ -120,7 +120,8 @@ fun HabitFlowNavGraph(navController: NavHostController) {
         // ── Settings ─────────────────────────────────────────────────────────
         composable(Screen.Settings.route) {
             SettingsScreen(
-                viewModel = hiltViewModel(),
+                viewModel      = hiltViewModel(),
+                authViewModel  = authViewModel,
                 onNavigateBack = { navController.popBackStack() },
             )
         }

@@ -15,7 +15,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.habitflow.app.domain.model.AuthState
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,8 +40,14 @@ class SettingsViewModel @Inject constructor(
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
 
     init {
+        // Re-fetch the profile every time the user becomes authenticated.
+        // This covers: first sign-in, sign-out then sign-in again, token refresh.
         viewModelScope.launch {
-            _userProfile.value = userRepository.getCachedProfile()
+            authRepository.authState
+                .filterIsInstance<AuthState.Authenticated>()
+                .collectLatest {
+                    _userProfile.value = userRepository.getCachedProfile()
+                }
         }
     }
 
