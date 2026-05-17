@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitFlow Architecture & Technical Documentation</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #3730A3;
+            --text-main: #1F2937;
+            --text-muted: #4B5563;
+            --bg-main: #F9FAFB;
+            --bg-card: #FFFFFF;
+            --border: #E5E7EB;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-main);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: var(--bg-card);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary-dark);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-top: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+        h3 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+            margin-top: 25px;
+        }
+        p, li {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .code-block {
+            background: #1E1E1E;
+            color: #D4D4D4;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            margin: 15px 0;
+        }
+        .highlight {
+            color: #569CD6;
+        }
+        .string {
+            color: #CE9178;
+        }
+        .comment {
+            color: #6A9955;
+        }
+        .card {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .diagram-container, .code-block { page-break-inside: avoid; }
+            h2 { page-break-after: avoid; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>HabitFlow: Technical Documentation</h1>
+    <p>A comprehensive overview of the architecture, integration, challenges, and learnings from building the HabitFlow mobile application.</p>
+
+    <!-- 1. ARCHITECTURE -->
+    <h2>1. Architecture</h2>
+    <p>HabitFlow is built using modern Android architecture components, ensuring scalability, testability, and a robust user experience regardless of network conditions.</p>
+
+    <h3>MVVM Architecture (Model-View-ViewModel)</h3>
+    <p><strong>Plain English:</strong> MVVM separates the app into three layers. The <strong>View</strong> (UI/Screens) displays data. The <strong>ViewModel</strong> holds the logic and prepares data for the UI to show. The <strong>Model</strong> manages the actual data (databases/cloud). This means the UI never directly talks to the database, preventing app freezes.</p>
+
+    <h3>Repository Pattern</h3>
+    <p><strong>Plain English:</strong> Think of the Repository as a warehouse manager. The ViewModel asks for "Habits", and the Repository decides whether to fetch them from the local storage (Room) or the cloud (Firestore). The ViewModel doesn't care where it comes from; it just trusts the manager to provide the data.</p>
+
+    <h3>Offline-First Strategy</h3>
+    <p><strong>Plain English:</strong> The app assumes you might not have internet. Every time you create or check off a habit, it saves immediately to your phone's local database. It feels instant. In the background, it silently queues up those changes to be pushed to the cloud whenever your internet connection returns.</p>
+
+    <div class="diagram-container">
+        <h3>System Architecture Diagram</h3>
+        <div class="mermaid">
+        graph TD
+            UI[UI / Compose Screens] <-->|StateFlow / Events| VM[ViewModels]
+            VM <-->|Data Requests| Repo[Repository Layer]
+            
+            subgraph Data Sources
+                Repo <-->|Read / Write Fast| Local[Room DB Local]
+                Repo <-->|Sync Background| Remote[Firestore Cloud]
+            end
+            
+            Worker[WorkManager] -->|Periodic Sync| Repo
+            Worker -.-> Remote
+            Local -.-> Worker
+        </div>
+    </div>
+
+    <!-- 2. CLOUD / API INTEGRATION -->
+    <h2>2. Cloud/API Integration</h2>
+
+    <h3>Firebase Authentication</h3>
+    <p><strong>Plain English:</strong> We use Firebase to securely manage user accounts. Users can sign up, log in, and securely reset passwords. Firebase provides an "Auth Token" that acts as a digital passport, keeping the user logged in even when offline.</p>
+    
+    <div class="code-block">
+<span class="comment">// Example: Authenticating a user</span>
+<span class="highlight">suspend fun</span> signIn(email: String, password: String) {
+    <span class="highlight">val</span> result = auth.signInWithEmailAndPassword(email, password).await()
+    <span class="comment">// Firebase issues a secure token automatically</span>
+}
+    </div>
+
+    <h3>Cloud Synchronization & Real-time Updates</h3>
+    <p><strong>Plain English:</strong> Instead of forcing the user to press a "Sync" button, the app uses Android's `WorkManager` to silently synchronize data every 15 minutes in the background. It pushes local changes up to Firestore and pulls down any changes made from other devices.</p>
+    
+    <div class="code-block">
+<span class="comment">// Example: Firestore Write</span>
+<span class="highlight">val</span> habitRef = firestore.collection(<span class="string">"users"</span>).document(userId).collection(<span class="string">"habits"</span>)
+habitRef.document(habitId).set(habitData).await()
+    </div>
+
+    <h3>API Architecture Flow</h3>
+    <div class="diagram-container">
+        <div class="mermaid">
+        sequenceDiagram
+            participant User
+            participant UI
+            participant Room as Local DB
+            participant Worker as Background Sync
+            participant Cloud as Firebase
+            
+            User->>UI: Completes Habit (Offline)
+            UI->>Room: Saves instantly
+            UI-->>User: Visual feedback (Instant!)
+            
+            Note over Worker: 15 mins later / Internet Returns
+            Worker->>Room: Read unsynced data
+            Worker->>Cloud: PUSH data
+            Cloud-->>Worker: Success
+            Worker->>Cloud: PULL new data
+            Worker->>Room: Update local cache
+        </div>
+    </div>
+
+    <!-- 3. CHALLENGES -->
+    <h2>3. Challenges Encountered</h2>
+    <div class="card">
+        <ul>
+            <li><strong>Room + API Synchronization:</strong> Handling merge conflicts when data is updated offline and online simultaneously. Solving this required tracking timestamps (`updatedAt`) to ensure the newest edit always wins.</li>
+            <li><strong>State Management:</strong> Preventing the UI from flashing or showing stale data during background syncs. Solved by using `StateFlow` to create a single, reactive source of truth tied to the local database.</li>
+            <li><strong>Authentication Issues (Offline Login):</strong> Initially, users couldn't bypass the login screen without internet. Fixed by leveraging Firebase's cached session tokens and adding a clear "No Internet" UX flow rather than crashing.</li>
+            <li><strong>Reboot Resilience for Alarms:</strong> Android clears all pending alarms when the phone restarts. We had to implement a `BroadcastReceiver` listening for `BOOT_COMPLETED` to manually reconstruct the user's daily reminder schedule after a restart.</li>
+        </ul>
+    </div>
+
+    <!-- 4. BEST PRACTICES -->
+    <h2>4. Best Practices Applied</h2>
+    <div class="card">
+        <ul>
+            <li><strong>MVVM & Clean Architecture:</strong> Kept UI completely separated from business logic. Code is modular, testable, and highly readable.</li>
+            <li><strong>Repository Pattern:</strong> Centralized data access. The UI never knows if data came from the cloud or local storage.</li>
+            <li><strong>Reactive UI with StateFlow:</strong> The UI observes the database. When the database updates (e.g., from a background sync), the UI automatically redraws itself without manual intervention.</li>
+            <li><strong>Lifecycle-Aware Components:</strong> Used `collectAsStateWithLifecycle()` to ensure the app doesn't waste battery processing data when it is minimized in the background.</li>
+            <li><strong>Dependency Injection (Hilt):</strong> Used Hilt to provide dependencies (like Database instances and Network clients), making testing significantly easier.</li>
+        </ul>
+    </div>
+
+    <!-- 5. LEARNINGS -->
+    <h2>5. Key Learnings</h2>
+    <div class="card">
+        <ul>
+            <li><strong>Android Architecture Ecosystem:</strong> Deepened understanding of how Room, WorkManager, Coroutines, and Compose fit together to create modern, responsive apps.</li>
+            <li><strong>Cloud Integration Nuances:</strong> Learned that "Offline-First" isn't just about saving data locally; it's about gracefully handling network exceptions, managing session states, and resolving data conflicts invisibly to the user.</li>
+            <li><strong>Scalability Concepts:</strong> Structuring Firestore data by User ID (`users/{uid}/habits`) ensures that as the app grows to thousands of users, database queries remain incredibly fast and secure via Security Rules.</li>
+        </ul>
+    </div>
+
+    <!-- 6. CONCLUSION -->
+    <h2>6. Conclusion & Future Improvements</h2>
+    
+    <h3>Summary of Achievements</h3>
+    <p>HabitFlow successfully evolved from a local-only prototype to a production-ready, cloud-synced application. It features robust offline capabilities, secure authentication, reactive UI, and a reliable background notification engine that survives device reboots. The foundation is highly modular and adheres to modern Android development standards.</p>
+
+    <h3>Future Improvements Roadmap</h3>
+    <ul>
+        <li><strong>FCM Push Notifications:</strong> Transition from local `AlarmManager` reminders to Firebase Cloud Messaging (FCM) to allow sending motivational pushes from a server.</li>
+        <li><strong>Admin Web Panel:</strong> Develop a React/Next.js web dashboard that hooks into the same Firestore database, allowing users to view and manage their habits from a desktop browser.</li>
+        <li><strong>Social / Accountability Features:</strong> Allow users to share habit streaks with friends or join public habit-building challenges.</li>
+        <li><strong>Enhanced Security & Analytics:</strong> Implement Firebase App Check for API abuse protection, and Firebase Crashlytics to monitor stability in the wild.</li>
+    </ul>
+
+</div>
+
+</body>
+</html>
